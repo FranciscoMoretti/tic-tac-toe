@@ -13,9 +13,14 @@ const lines = [
 
 type SquareValue = "X" | "O" | "";
 
+const BOARD_SIZE = 3;
+
 export default function Game() {
-  const [history, setHistory] = useState<SquareValue[][]>([Array(9).fill("")]);
+  const [history, setHistory] = useState<SquareValue[][]>([
+    Array(BOARD_SIZE * BOARD_SIZE).fill(""),
+  ]);
   const [currentMove, setCurrentMove] = useState(0);
+  const [movesAscending, setMovesAscending] = useState(true);
 
   const squares = history[currentMove];
   const winner = calculateWinner(squares);
@@ -40,11 +45,25 @@ export default function Game() {
         )}
       </div>
       <div className="game-info">
-        <p>History</p>
-        <ol>
+        <div>
+          <p>History</p>{" "}
+          <button onClick={() => setMovesAscending((curr) => !curr)}>
+            Change sort order
+          </button>
+        </div>
+        <ol
+          style={{
+            display: "flex",
+            flexDirection: movesAscending ? "column" : "column-reverse",
+          }}
+        >
           {history.map((_, i) => (
             <li key={i}>
-              <button onClick={() => setCurrentMove(i)}>{`Step ${i}`}</button>
+              {i === currentMove ? (
+                <p>{`You are at move ${i}`}</p>
+              ) : (
+                <button onClick={() => setCurrentMove(i)}>{`Step ${i}`}</button>
+              )}
             </li>
           ))}
         </ol>
@@ -73,21 +92,16 @@ export function Board({
 
   return (
     <div>
-      <div className="board-row">
-        <Square onClick={() => handleClick(0)} value={squares[0]}></Square>
-        <Square onClick={() => handleClick(1)} value={squares[1]}></Square>
-        <Square onClick={() => handleClick(2)} value={squares[2]}></Square>
-      </div>
-      <div className="board-row">
-        <Square onClick={() => handleClick(3)} value={squares[3]}></Square>
-        <Square onClick={() => handleClick(4)} value={squares[4]}></Square>
-        <Square onClick={() => handleClick(5)} value={squares[5]}></Square>
-      </div>
-      <div className="board-row">
-        <Square onClick={() => handleClick(6)} value={squares[6]}></Square>
-        <Square onClick={() => handleClick(7)} value={squares[7]}></Square>
-        <Square onClick={() => handleClick(8)} value={squares[8]}></Square>
-      </div>
+      {new Array(BOARD_SIZE).fill("").map((_, i) => (
+        <div className="board-row">
+          {new Array(BOARD_SIZE).fill("").map((_, j) => (
+            <Square
+              onClick={() => handleClick(i * BOARD_SIZE + j)}
+              value={squares[i * BOARD_SIZE + j]}
+            ></Square>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
