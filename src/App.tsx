@@ -14,31 +14,47 @@ const lines = [
 type SquareValue = "X" | "O" | "";
 
 export default function Game() {
-  const [squares, setSquares] = useState<SquareValue[]>(
-    new Array<"">(9).fill("")
-  );
+  const [history, setHistory] = useState<SquareValue[][]>([Array(9).fill("")]);
+  const currentsSquaresIdx = history.length - 1;
 
+  const squares = history[currentsSquaresIdx];
   const currentPlayer = squares.filter(Boolean).length % 2 ? "O" : "X";
   const winner = calculateWinner(squares);
 
   return (
-    <div>
-      <Board
-        squares={squares}
-        onPlay={(idx) => {
-          if (squares[idx] || winner) {
-            return;
-          }
-          const newSquares = squares.slice();
-          newSquares[idx] = currentPlayer;
-          setSquares(newSquares);
-        }}
-      />
-      {winner ? (
-        <p>{`Winner: ${winner}`}</p>
-      ) : (
-        <p>{`Next player: ${currentPlayer}`}</p>
-      )}
+    <div className="game">
+      <div className="game-board">
+        <Board
+          squares={squares}
+          onPlay={(idx) => {
+            if (squares[idx] || winner) {
+              return;
+            }
+            const newHistory = history.map((el) => el.slice());
+            const newSquares = history[currentsSquaresIdx].slice();
+            newSquares[idx] = currentPlayer;
+            newHistory.push(newSquares);
+            setHistory(newHistory);
+          }}
+        />
+        {winner ? (
+          <p>{`Winner: ${winner}`}</p>
+        ) : (
+          <p>{`Next player: ${currentPlayer}`}</p>
+        )}
+      </div>
+      <div className="game-info">
+        <p>History</p>
+        <ol>
+          {history.map((_, i) => (
+            <li>
+              <button
+                onClick={() => setHistory(history.slice(0, i + 1))}
+              >{`Step ${i}`}</button>
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   );
 }
