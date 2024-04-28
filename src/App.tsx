@@ -23,7 +23,8 @@ export default function Game() {
   const [movesAscending, setMovesAscending] = useState(true);
 
   const squares = history[currentMove];
-  const winner = calculateWinner(squares);
+  const winnerLine = calculateWinner(squares);
+  const winner = winnerLine ? squares[winnerLine[0]] : "";
   const currentPlayer = currentMove % 2 ? "O" : "X";
 
   return (
@@ -32,6 +33,7 @@ export default function Game() {
         <Board
           currPlayer={currentPlayer}
           squares={squares}
+          winnerLine={winnerLine}
           onPlay={(nextSquares: SquareValue[]) => {
             const currHistory = history.slice(0, currentMove + 1);
             setHistory([...currHistory, nextSquares]);
@@ -75,10 +77,12 @@ export default function Game() {
 export function Board({
   currPlayer,
   squares,
+  winnerLine,
   onPlay,
 }: {
   currPlayer: "X" | "O";
   squares: SquareValue[];
+  winnerLine: number[] | null;
   onPlay: (nextSquares: SquareValue[]) => void;
 }) {
   function handleClick(i: number) {
@@ -96,6 +100,11 @@ export function Board({
         <div className="board-row">
           {new Array(BOARD_SIZE).fill("").map((_, j) => (
             <Square
+              className={
+                winnerLine && winnerLine.includes(i * BOARD_SIZE + j)
+                  ? "winner-cell"
+                  : ""
+              }
               onClick={() => handleClick(i * BOARD_SIZE + j)}
               value={squares[i * BOARD_SIZE + j]}
             ></Square>
@@ -109,25 +118,27 @@ export function Board({
 export function Square({
   value,
   onClick,
+  className = "",
 }: {
   value: string;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  className: string;
 }) {
   return (
-    <button onClick={onClick} className="square">
+    <button className={"square " + className} onClick={onClick}>
       {value}
     </button>
   );
 }
 
-function calculateWinner(squares: SquareValue[]) {
+function calculateWinner(squares: SquareValue[]): number[] | null {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const first = squares[line[0]];
     const winner =
       line.filter((idx) => squares[idx] == first).length === line.length;
     if (winner && first) {
-      return first;
+      return [...line];
     }
   }
   return null;
