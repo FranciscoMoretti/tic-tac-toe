@@ -19,6 +19,7 @@ export default function Game() {
   const [history, setHistory] = useState<SquareValue[][]>([
     Array(BOARD_SIZE * BOARD_SIZE).fill(""),
   ]);
+  const [moveHistory, setMoveHistory] = useState<number[]>([]);
   const [currentMove, setCurrentMove] = useState(0);
   const [movesAscending, setMovesAscending] = useState(true);
 
@@ -34,9 +35,10 @@ export default function Game() {
           currPlayer={currentPlayer}
           squares={squares}
           winnerLine={winnerLine}
-          onPlay={(nextSquares: SquareValue[]) => {
+          onPlay={(nextSquares: SquareValue[], clickIdx: number) => {
             const currHistory = history.slice(0, currentMove + 1);
             setHistory([...currHistory, nextSquares]);
+            setMoveHistory([...moveHistory.slice(0, currentMove), clickIdx]);
             setCurrentMove((move) => move + 1);
           }}
         />
@@ -64,7 +66,13 @@ export default function Game() {
               {i === currentMove ? (
                 <p>{`You are at move ${i}`}</p>
               ) : (
-                <button onClick={() => setCurrentMove(i)}>{`Step ${i}`}</button>
+                <button onClick={() => setCurrentMove(i)}>{`Step ${i} move ${
+                  moveHistory[i] != undefined
+                    ? Math.floor(moveHistory[i] / BOARD_SIZE) +
+                      "," +
+                      (moveHistory[i] % BOARD_SIZE)
+                    : "-"
+                }`}</button>
               )}
             </li>
           ))}
@@ -83,7 +91,7 @@ export function Board({
   currPlayer: "X" | "O";
   squares: SquareValue[];
   winnerLine: number[] | null;
-  onPlay: (nextSquares: SquareValue[]) => void;
+  onPlay: (nextSquares: SquareValue[], clickIdx: number) => void;
 }) {
   function handleClick(i: number) {
     if (calculateWinner(squares) || squares[i]) {
@@ -91,7 +99,7 @@ export function Board({
     }
     const nextSquares = squares.slice();
     nextSquares[i] = currPlayer;
-    onPlay(nextSquares);
+    onPlay(nextSquares, i);
   }
 
   return (
